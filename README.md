@@ -30,8 +30,6 @@ Built with **Streamlit** and **OpenAI GPT-4o**, it returns a four-part comedy br
 
 - 🔥 Meme-style GPT-4o responses  
 - 😅 Self-aware professional humor  
-- 📱 Twitter/X share-friendly format  
-- ⏱️ Built-in cooldown to prevent spam  
 - 🤖 Instant re-roll for new job titles  
 - 📝 Sidebar filled with corporate culture jokes  
 
