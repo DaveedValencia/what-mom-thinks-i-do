@@ -64,8 +64,7 @@ job_title = st.text_input(
     "Enter your job title:", 
     max_chars=100, 
     placeholder="e.g., Data Scientist, UX Designer, DevOps Engineer",
-    on_change=submit_job,
-    key="job_title_input"
+    on_change=submit_job
 )
 
 # Function to call OpenAI API with proper error handling
