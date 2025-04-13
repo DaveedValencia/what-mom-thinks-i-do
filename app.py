@@ -1,11 +1,20 @@
 import streamlit as st
 from openai import OpenAI
 import os
-import time
 
-# Load environment variables
+
+# Get API key from environment variable
 api_key = os.environ.get("OPENAI_API_KEY")
-client = OpenAI(api_key=api_key)
+if not api_key:
+    st.error("OpenAI API key not found. Please set the OPENAI_API_KEY environment variable.")
+    st.stop()
+
+# Initialize OpenAI client with error handling
+try:
+    client = OpenAI(api_key=api_key)
+except Exception as e:
+    st.error(f"Failed to initialize OpenAI client: {str(e)}")
+    st.stop()
 
 # Set page config with enhanced metadata
 st.set_page_config(
@@ -18,14 +27,15 @@ st.set_page_config(
 )
 
 # Initialize session state variables
-if "last_request_time" not in st.session_state:
-    st.session_state.last_request_time = time.time() - 10
+# Removed last_request_time as it's no longer needed
 if "request_count" not in st.session_state:
     st.session_state.request_count = 0
 if "submitted" not in st.session_state:
     st.session_state.submitted = False
 if "job_title_input" not in st.session_state:
     st.session_state.job_title_input = ""
+if "job_perspectives" not in st.session_state:
+    st.session_state.job_perspectives = ""
 
 # Check for a job in query parameters
 if "job" in st.query_params and not st.session_state.submitted:
@@ -36,11 +46,8 @@ if "job" in st.query_params and not st.session_state.submitted:
 def submit_job():
     st.session_state.submitted = True
 
-# Simple rate limiting function
+# Always allow requests (no cooldown)
 def can_make_request():
-    current_time = time.time()
-    if current_time - st.session_state.last_request_time < 5:  # 5 second cooldown
-        return False
     return True
 
 # App title and description
@@ -61,24 +68,13 @@ job_title = st.text_input(
     key="job_title_input"
 )
 
-# Generate response
-if st.button("Generate job perspectives 🤔") or st.session_state.submitted:
-    # Reset the submitted state for next use
-    st.session_state.submitted = False
-    
-    if job_title:
-        if can_make_request():
-            with st.spinner("Generating your job reality check..."):
-                try:
-                    # Update rate limiting
-                    st.session_state.last_request_time = time.time()
-                    st.session_state.request_count += 1
-                    
-                    # Call the OpenAI API
-                    response = client.chat.completions.create(
-                        model="gpt-4o",
-                        messages=[
-                            {"role": "system", "content": """Create a humorous 'What I Actually Do' response for a job title with these four parts. Make sure each part is on its own lines with proper spacing between sections:
+# Function to call OpenAI API with proper error handling
+def generate_job_perspectives(job_title):
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": """Create a humorous 'What I Actually Do' response for a job title with these four parts. Make sure each part is on its own lines with proper spacing between sections:
 
 1. What my mom thinks I do:
 Create a brief, funny quote (20-30 words) with emoji 🧓 from a loving boomer mom who's not tech-savvy but tries to understand. Use slightly outdated references, genuine pride, and practical concerns about benefits/stability.
@@ -104,34 +100,61 @@ Format exactly like this example with proper line breaks between each section an
 
 **What I actually do:**
 🔥 Fix broken discount codes at 11 PM while refreshing FedEx tracking and eating dinner over a Slack huddle."""},
-                            {"role": "user", "content": f"Create a 'What I Actually Do' response for: {job_title}"}
-                        ],
-                        max_tokens=400,
-                        temperature=0.8
-                    )
-                    
-                    # Extract the response
-                    job_perspectives = response.choices[0].message.content
-                    
-                    # Display in a nice box with preserved formatting
-                    st.success("### Your Job Reality:")
-                    
-                    # Ensure Markdown formatting is preserved with whitespace
-                    formatted_perspectives = job_perspectives.replace("\n", "\n\n").replace("\n\n\n\n", "\n\n")
-                    st.markdown(f"{formatted_perspectives}")
-                    
-                    # Add button to generate again
-                    if st.button("Try another job title", key="try_again"):
-                        # Clear the input field
-                        st.session_state.job_title_input = ""
-                        st.rerun()
-                    
-                except Exception as e:
-                    st.error(f"Oops! Something went wrong. Please try again. Error: {str(e)}")
+                {"role": "user", "content": f"Create a 'What I Actually Do' response for: {job_title}"}
+            ],
+            max_tokens=400,
+            temperature=0.8
+        )
+        
+        # Extract the response
+        return response.choices[0].message.content
+    
+    except Exception as e:
+        error_msg = str(e)
+        if "api_key" in error_msg.lower():
+            return "ERROR: Invalid or missing API key. Please check your OpenAI API key configuration."
+        elif "rate limit" in error_msg.lower():
+            return "ERROR: Rate limit exceeded. Please try again in a few moments."
         else:
-            st.warning(f"Please wait a moment before generating another response!")
+            return f"ERROR: Could not generate response: {error_msg}"
+
+# Generate response
+if st.button("Generate job perspectives 🤔") or st.session_state.submitted:
+    # Reset the submitted state for next use
+    st.session_state.submitted = False
+    
+    if job_title:
+        if can_make_request():
+            with st.spinner("Generating your job reality check..."):
+                # Only track request count, cooldown removed
+                st.session_state.request_count += 1
+                
+                # Call the OpenAI API
+                job_perspectives = generate_job_perspectives(job_title)
+                
+                # Store result in session state
+                st.session_state.job_perspectives = job_perspectives
     else:
         st.warning("Please enter your job title first! ✨")
+
+# Display results if available
+if st.session_state.job_perspectives:
+    if st.session_state.job_perspectives.startswith("ERROR:"):
+        st.error(st.session_state.job_perspectives)
+    else:
+        # Display in a nice box with preserved formatting
+        st.success("### Your Job Reality:")
+        
+        # Ensure Markdown formatting is preserved with whitespace
+        formatted_perspectives = st.session_state.job_perspectives.replace("\n", "\n\n").replace("\n\n\n\n", "\n\n")
+        st.markdown(f"{formatted_perspectives}")
+        
+        # Add button to generate again
+        if st.button("Try another job title", key="try_again"):
+            # Clear the input field and result
+            st.session_state.job_title_input = ""
+            st.session_state.job_perspectives = ""
+            st.rerun()
 
 # Footer
 st.markdown("---")
