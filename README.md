@@ -69,7 +69,6 @@ Python version: **3.10**
 
 - Theme: Light  
 - Emoji Support: ✅  
-- Share Buttons: Twitter  
 
 ---
 
