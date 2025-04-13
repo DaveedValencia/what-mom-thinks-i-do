@@ -158,8 +158,11 @@ if st.session_state.job_perspectives:
 # Footer
 st.markdown("---")
 st.markdown("""
-**Created by David Valencia** - Follow me: [X](https://x.com/DaveedValencia) | [IG](https://instagram.com/DaveedValencia) 🚀  
-opensource available on [GitHub](https://github.com/DaveedValencia/what-mom-thinks-i-do)
+**Created by David Valencia**
+
+**Learn how to vibe code -->** [YouTube](https://youtube.com/@DaveedValencia)
+
+**Socials:** [X](https://x.com/DaveedValencia) | [IG](https://instagram.com/DaveedValencia) 🚀
 """)
 
 # Sidebar meme content
