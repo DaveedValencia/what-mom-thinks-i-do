@@ -17,7 +17,6 @@ st.set_page_config(
     }
 )
 
-
 # Initialize session state variables
 if "last_request_time" not in st.session_state:
     st.session_state.last_request_time = time.time() - 10
@@ -138,7 +137,7 @@ Format exactly like this example with proper line breaks between each section an
 st.markdown("---")
 st.markdown("""
 **Created by David Valencia** - Follow me: [X](https://x.com/DaveedValencia) | [IG](https://instagram.com/DaveedValencia) 🚀  
-<br>this project is opensource available on [GitHub](https://github.com/DaveedValencia/what-mom-thinks-i-do)
+opensource available on [GitHub](https://github.com/DaveedValencia/what-mom-thinks-i-do)
 """)
 
 # Sidebar meme content
