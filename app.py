@@ -1,12 +1,11 @@
 import streamlit as st
 from openai import OpenAI
 import os
-from dotenv import load_dotenv
 import time
 
 # Load environment variables
-load_dotenv()
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+api_key = os.environ.get("OPENAI_API_KEY")
+client = OpenAI(api_key=api_key)
 
 # Set page config with enhanced metadata
 st.set_page_config(
