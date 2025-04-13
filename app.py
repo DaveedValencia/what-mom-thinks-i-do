@@ -18,6 +18,7 @@ st.set_page_config(
     }
 )
 
+
 # Initialize session state variables
 if "last_request_time" not in st.session_state:
     st.session_state.last_request_time = time.time() - 10
