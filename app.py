@@ -18,7 +18,7 @@ except Exception as e:
 
 # Set page config with enhanced metadata
 st.set_page_config(
-    page_title="what mom thinks i do - Job Title Reality Check",
+    page_title="what mom thinks i do",
     page_icon="🔥",
     layout="centered",
     menu_items={
